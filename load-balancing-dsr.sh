@@ -3,6 +3,7 @@
 function cleanup {
 
     set +e
+    jobs -p | xargs -r kill
 
     # delete cubes
     polycubectl del br1client
@@ -25,6 +26,20 @@ function cleanup {
 
 }
 trap cleanup EXIT
+
+function refresh_fdb_entry() {
+
+    while true
+    do
+        # statically set an entry in br1server to tell it to propagate responses to
+        # the load balancer. in fact, the frontend MAC itself isn't used to generate
+        # traffic (being virtual) and it will therefore never have an entry, causing
+        # flooding and duplicate responses from servers.
+        polycubectl br1server fdb entry add 01:01:01:AA:BB:CC port=to_lb_frontend
+        sleep 60
+    done
+
+}
 
 set -x
 set -e
@@ -125,5 +140,8 @@ mac_server_ns3=$(sudo ip netns exec ns3 cat /sys/class/net/veth3ns/address)
 mac_server_ns4=$(sudo ip netns exec ns4 cat /sys/class/net/veth4ns/address)
 polycubectl lbdsr lb1 backend pool add 1 mac=${mac_server_ns3}
 polycubectl lbdsr lb1 backend pool add 2 mac=${mac_server_ns4}
+
+# add frontend MAC manually to br1server, more details in the function
+refresh_fdb_entry &
 
 read -p "press ENTER to delete current config."
