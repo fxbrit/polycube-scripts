@@ -87,4 +87,42 @@ polycubectl br2server ports add toveth5
 polycubectl br1server ports add toveth6
 polycubectl connect br2server:toveth5 br1server:toveth6
 
+# create dsr load balancer with frontend (for clients) and
+# backend (for servers) ports
+polycubectl lbdsr add lb1
+polycubectl lbdsr lb1 ports add lb_frontend type=FRONTEND
+polycubectl lbdsr lb1 ports add lb_backend type=BACKEND
+
+# connect frontend port to br1server and backed port to br2server
+polycubectl br1server ports add to_lb_frontend
+polycubectl connect br1server:to_lb_frontend lb1:lb_frontend
+polycubectl br2server ports add to_lb_backend
+polycubectl connect br2server:to_lb_backend lb1:lb_backend
+
+# set virtual IP to loobpack of the servers, so that they will
+# accept traffic meant for the VIP
+sudo ip netns exec ns3 ip addr add 10.10.8.200 dev lo
+sudo ip netns exec ns3 ip link set lo up
+sudo ip netns exec ns4 ip addr add 10.10.8.200 dev lo
+sudo ip netns exec ns4 ip link set lo up
+
+# disable ARP on the servers, as otherwise the above mapping
+# with the loopback will break the network. let the load balancer handle
+# MAC addresses of the servers.
+sudo ip netns exec ns3 sysctl -w net.ipv4.conf.all.arp_ignore=1
+sudo ip netns exec ns3 sysctl -w net.ipv4.conf.all.arp_announce=2
+sudo ip netns exec ns4 sysctl -w net.ipv4.conf.all.arp_ignore=1
+sudo ip netns exec ns4 sysctl -w net.ipv4.conf.all.arp_announce=2
+
+# set virtual IP and MAC to the frontend
+polycubectl lbdsr lb1 frontend set vip=10.10.8.200
+polycubectl lbdsr lb1 frontend set mac=01:01:01:AA:BB:CC
+
+# get MAC address of the servers and use them to populate the server pool
+# for the backend of the load balancer
+mac_server_ns3=$(sudo ip netns exec ns3 cat /sys/class/net/veth3ns/address)
+mac_server_ns4=$(sudo ip netns exec ns4 cat /sys/class/net/veth4ns/address)
+polycubectl lbdsr lb1 backend pool add 1 mac=${mac_server_ns3}
+polycubectl lbdsr lb1 backend pool add 2 mac=${mac_server_ns4}
+
 read -p "press ENTER to delete current config."
