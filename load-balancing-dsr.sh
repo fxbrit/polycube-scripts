@@ -103,6 +103,9 @@ polycubectl br2server ports add toveth5
 polycubectl br1server ports add toveth6
 polycubectl connect br2server:toveth5 br1server:toveth6
 
+# --------------------------------------------------------------
+# LOAD BALANCER FROM NOW ON 
+
 # create dsr load balancer with frontend (for clients) and
 # backend (for servers) ports
 polycubectl lbdsr add lb1
