@@ -44,7 +44,7 @@ function refresh_fdb_entry() {
 set -x
 set -e
 
-# create namespace1, namespace 2 and br1 as in router-nat
+# create namespace1, namespace2 and br1 as in router-nat
 sudo ip netns add ns1
 sudo ip link add veth1root type veth peer name veth1ns
 sudo ip link set veth1ns netns ns1
