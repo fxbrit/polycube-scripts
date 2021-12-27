@@ -76,4 +76,14 @@ polycubectl connect r1:to_server veth_srv_router
 # disable SYN cookies as we want to simulate SYN flooding
 sudo sysctl -w net.ipv4.tcp_syncookies=0
 
+# add ddos mitigator
+polycubectl ddosmitigator add ddm1
+polycubectl attach ddm1 veth_srv_root
+
+# blacklist IPs that are used for attack
+for i in `seq 0 255`; do
+    polycubectl ddm1 blacklist-src add 10.11.11.${i}
+    echo "Blackisting address 10.11.11.${i}"
+done
+
 read -p "press ENTER to delete current config."

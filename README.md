@@ -12,3 +12,8 @@ scripts to create setups using linux namespaces and [polycube](https://polycube.
 ## ddos
 
 <img src="./setups/ddos.png" alt="ddos" width="500"/>
+
+to simulate a ddos:
+```
+sudo ip netns exec ns2 hping3p -d 120 -S -w 64 -p 1500 --flood --rand-source-pool 10.11.11.x 10.10.8.1
+```
