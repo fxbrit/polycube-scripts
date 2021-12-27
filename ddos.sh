@@ -7,6 +7,7 @@ function cleanup {
     # delete cubes
     polycubectl del br1client
     polycubectl del r1
+    polycubectl del ddm1
 
     # delete virtual links
     sudo ip link del veth1root
