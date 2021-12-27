@@ -7,6 +7,7 @@ function cleanup {
     # delete cubes
     polycubectl del br1ns
     polycubectl del r1
+    polycubectl del nat1
 
     # delete virtual links
     sudo ip link del veth1root
@@ -67,5 +68,11 @@ polycubectl connect r1:to_internet enp1s0
 # set default route to the internet, which is IP of physical default
 # gateway. might need to change: in case use ip route command.
 polycubectl r1 route add 0.0.0.0/0 169.254.1.1
+
+# create nat and attach it to router port on link to internet. remember
+# that nat is transparent and requires enabling masquerading.
+polycubectl nat add nat1
+polycubectl attach nat1 r1:to_internet
+polycubectl nat1 rule masquerade enable
 
 read -p "press ENTER to delete current config."
