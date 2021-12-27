@@ -62,8 +62,8 @@ sudo ip link add veth4root type veth peer name veth4ns
 sudo ip link set veth4ns netns ns4
 sudo ip netns exec ns4 ip link set dev veth4ns up
 sudo ip link set dev veth4root up
-sudo ip netns exec ns2 ip addr add 10.10.8.4/24 dev veth4ns
-sudo ip netns exec ns2 ip route add default via 10.10.8.254 dev veth4ns
+sudo ip netns exec ns4 ip addr add 10.10.8.4/24 dev veth4ns
+sudo ip netns exec ns4 ip route add default via 10.10.8.254 dev veth4ns
 polycubectl simplebridge add br2server
 polycubectl br2server ports add toveth3
 polycubectl connect br2server:toveth3 veth3root
