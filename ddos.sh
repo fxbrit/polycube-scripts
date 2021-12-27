@@ -20,6 +20,9 @@ function cleanup {
     # delete routes
     sudo ip route del 10.10.7.0/24 via 10.10.8.254
     sudo ip route del 10.11.11.0/24 via 10.10.8.254
+
+    # reset SYN cookies
+    sudo sysctl -w net.ipv4.tcp_syncookies=1
   
 }
 trap cleanup EXIT
@@ -67,7 +70,7 @@ sudo ip route add 10.10.7.0/24 via 10.10.8.254
 sudo ip route add 10.11.11.0/24 via 10.10.8.254
 
 # connect router to root namespace
-polycubectl r1 ports add to_server
+polycubectl r1 ports add to_server ip=10.10.8.254/24
 polycubectl connect r1:to_server veth_srv_router
 
 # disable SYN cookies as we want to simulate SYN flooding
